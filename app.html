@@ -97,14 +97,13 @@
       <svg id="noosh" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NOOSH mascot">
         <defs>
           <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d222c"/><stop offset="1" stop-color="#07080c"/></linearGradient>
-          <radialGradient id="face" cx="0.38" cy="0.30" r="0.78"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e6eaf1"/></radialGradient>
         </defs>
         <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-        <circle cx="256" cy="256" r="152" fill="url(#face)"/>
+        <circle cx="256" cy="256" r="150" fill="#ffffff"/>
         <g id="head">
-          <g id="eyeL"><g class="gazeL"><ellipse cx="204" cy="224" rx="27" ry="35" fill="#0b0d12"/><circle cx="195" cy="210" r="9" fill="#ffffff" opacity="0.95"/></g></g>
-          <g id="eyeR"><g class="gazeR"><ellipse cx="308" cy="224" rx="27" ry="35" fill="#0b0d12"/><circle cx="299" cy="210" r="9" fill="#ffffff" opacity="0.95"/></g></g>
-          <path id="mouth" d="M180 288 Q 256 372 332 288 Q 256 330 180 288 Z" fill="#0b0d12"/>
+          <g id="eyeL"><g class="gazeL"><ellipse cx="206" cy="220" rx="23" ry="31" fill="#0b0d12"/></g></g>
+          <g id="eyeR"><g class="gazeR"><ellipse cx="306" cy="220" rx="23" ry="31" fill="#0b0d12"/></g></g>
+          <path id="mouth" d="M172 286 Q 256 392 340 286 Q 256 330 172 286 Z" fill="#0b0d12"/>
         </g>
       </svg>
     </div>
@@ -221,8 +220,8 @@
     document.body.classList.toggle('listening', on);
     var m = document.getElementById('mouth');
     if(m) m.setAttribute('d', on
-      ? 'M206 296 Q 256 296 306 296 Q 306 372 256 372 Q 206 372 206 296 Z'
-      : 'M180 288 Q 256 372 332 288 Q 256 330 180 288 Z');
+      ? 'M206 292 Q 256 292 306 292 Q 306 376 256 376 Q 206 376 206 292 Z'
+      : 'M172 286 Q 256 392 340 286 Q 256 330 172 286 Z');
     statusEl.firstChild.textContent = on ? 'Listening…' : 'Ready';
     subEl.textContent = on ? 'Release to stop.' : 'Hold the mic, or hold the Space bar, and speak.';
   }
