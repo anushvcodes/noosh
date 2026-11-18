@@ -8,15 +8,7 @@
 <meta property="og:title" content="NOOSH — hold Option, talk, it types" />
 <meta property="og:description" content="Voice to text anywhere on your Mac. Or try it in your browser — no install." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23f8fafc'/%3E%3Ccircle cx='23' cy='26' r='5' fill='%230b0d12'/%3E%3Ccircle cx='41' cy='26' r='5' fill='%230b0d12'/%3E%3Cpath d='M20 40q12 12 24 0' stroke='%230b0d12' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
-<!-- PWA -->
-<link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#0b0c10" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Vox" />
-<link rel="apple-touch-startup-image" href="icon-512.png" />
 <style>
   :root{
     --bg1:#0b0c10; --bg2:#020204; --card:rgba(255,255,255,.05);
@@ -79,12 +71,8 @@
   }
   kbd{background:rgba(255,255,255,.09); border:1px solid var(--line); border-bottom-width:2px; border-radius:6px; padding:1px 7px; font-size:12.5px; font-family:inherit; white-space:nowrap}
   .warn{margin-top:18px; padding:12px 14px; border-radius:12px; font-size:13.5px; background:rgba(255,214,120,.10); border:1px solid rgba(255,214,120,.28); color:#ffe6b0}
-  /* install card — mobile "Add to Home Screen" */
+  /* keep [hidden] authoritative over .btn/.cta display rules */
   [hidden]{display:none !important}
-  .install-title{margin:0 0 6px; font-size:20px; letter-spacing:-.3px; text-align:center}
-  .install-sub{margin:0 auto 18px; color:var(--dim); font-size:14px; text-align:center; max-width:440px}
-  .install-cta{margin-bottom:4px}
-  .share{display:inline-flex; align-items:center; color:var(--mint); vertical-align:-2px}
   .foot{text-align:center; color:var(--dim); font-size:12.5px; margin-top:20px; line-height:1.7}
   strong{color:#fff}
 
@@ -198,30 +186,9 @@
       </ul>
 
       <div class="warn" id="winWarn" hidden>
-        There's no native <strong>Windows</strong>/<strong>Linux</strong> app yet — so on those, use the
+        There's no native app for your system yet — so use the
         <strong>browser version</strong> above. It does voice-to-text with a Copy button, no install needed.
       </div>
-    </div>
-
-    <!-- Mobile: Add to Home Screen -->
-    <div id="mobBlock" hidden>
-      <h2 class="install-title">Add NOOSH to your Home Screen</h2>
-      <p class="install-sub">NOOSH installs like a real app — full screen, no browser bars, and it works offline.</p>
-      <div class="cta install-cta">
-        <button class="btn primary" id="installBtn" hidden>⤓ Install app</button>
-        <a class="btn secondary" href="app.html">Try NOOSH now →</a>
-      </div>
-      <ul class="steps" id="iosSteps" hidden>
-        <li>Make sure you're in <strong>Safari</strong>, then tap the <strong>Share</strong> button <span class="share" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M12 3v11M12 3l-4 4M12 3l4 4M6 10H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> at the bottom.</li>
-        <li>Scroll the menu and tap <strong>Add to Home Screen</strong>.</li>
-        <li>Tap <strong>Add</strong> in the top corner — the NOOSH face appears on your Home Screen.</li>
-      </ul>
-      <ul class="steps" id="androidSteps" hidden>
-        <li>Open this page in <strong>Chrome</strong>, then tap the <strong>⋮</strong> menu in the top-right.</li>
-        <li>Tap <strong>Install app</strong> (or <strong>Add to Home screen</strong>).</li>
-        <li>Confirm — NOOSH appears on your Home Screen and opens full screen.</li>
-      </ul>
-      <p class="note" id="mobNote">Tap <strong>Install app</strong> when it appears — that's the one-tap way. The steps are the manual fallback.</p>
     </div>
   </div>
 
@@ -369,18 +336,17 @@
 </script>
 
 <script>
-// ---------- One URL, the right experience: device detection + routing ----------
+// ---------- One URL, the right download: desktop routing ----------
 (function(){
   var ua       = navigator.userAgent || '';
   var uaData   = navigator.userAgentData || null;
   var navPlat  = (uaData && uaData.platform) || navigator.platform || '';
 
   var isAndroid = /Android/i.test(ua);
-  // iPadOS reports itself as a Mac, so treat a touch-capable, Mac-looking UA as iOS.
-  var touchMac  = !isAndroid && /Mac/i.test(navPlat) && navigator.maxTouchPoints > 1 &&
-                  /Macintosh|Mac OS X/i.test(ua);
-  var isIOS     = /iPad|iPhone|iPod/.test(ua) || touchMac;
-  var isMobile  = isIOS || isAndroid || /Mobi|Tablet|Silk/i.test(ua);
+  // Phones/tablets aren't the target (this page is for desktops), but a quick
+  // guard keeps a "Download for Mac" button off an iPhone/Android screen.
+  var isPhone   = /iPhone|iPad|iPod|Android/i.test(ua) ||
+                  (/Mac/i.test(navPlat) && navigator.maxTouchPoints > 1);
 
   // OS from the UA string; fall back to the platform hint only when the UA is silent.
   var os = /Windows/i.test(ua)            ? 'Windows'
@@ -389,48 +355,18 @@
          : navPlat;
 
   var isWin   = /Win/i.test(os) && !isAndroid;
-  var isMac   = /Mac/i.test(os) && !isIOS && !isWin;
+  var isMac   = /Mac/i.test(os) && !isWin && !isPhone;
   var isLinux = /Linux|X11|CrOS/i.test(os) && !isAndroid && !isMac;
 
   var deskBlock = document.getElementById('deskBlock');
-  var mobBlock  = document.getElementById('mobBlock');
   var dl        = document.getElementById('dl');
   var dlLabel   = document.getElementById('dlLabel');
   var web       = document.getElementById('web');
   var deskNote  = document.getElementById('deskNote');
-  var guideSub  = document.getElementById('guideSub');
-  var pttHint   = document.getElementById('pttHint');
 
-  var REPO   = 'https://github.com/anushvcodes/noosh';
-  var DMG    = REPO + '/releases/latest/download/NOOSH.dmg';
+  var REPO = 'https://github.com/anushvcodes/noosh';
+  var DMG  = REPO + '/releases/latest/download/NOOSH.dmg';
 
-  // ---------- Mobile: Add to Home Screen ----------
-  if (isMobile){
-    mobBlock.hidden = false;
-    document.getElementById(isIOS ? 'iosSteps' : 'androidSteps').hidden = false;
-
-    if (guideSub) guideSub.innerHTML = 'Tap and hold the picture and the mic opens. The moment you let go it closes — so your mic is never held, and other apps stay free.';
-    if (pttHint)  pttHint.innerHTML  = 'Try it now — tap and hold the picture above.';
-
-    // Native one-tap install (Android/Chrome). iOS has no beforeinstallprompt,
-    // so there the manual steps above are the path.
-    var deferred = null;
-    var btn = document.getElementById('installBtn');
-    window.addEventListener('beforeinstallprompt', function(e){
-      e.preventDefault();
-      deferred = e;
-      if (btn) btn.hidden = false;
-    });
-    if (btn) btn.addEventListener('click', function(){
-      if (deferred && deferred.prompt) deferred.prompt();
-      deferred = null;
-      btn.hidden = true;
-    });
-    window.addEventListener('appinstalled', function(){ if (btn) btn.hidden = true; });
-    return;
-  }
-
-  // ---------- Desktop ----------
   deskBlock.hidden = false;
 
   if (isMac){
@@ -470,15 +406,6 @@
     .catch(function(){});
   }
 })();
-</script>
-
-<script>
-// Register the service worker so the app is installable + works offline.
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  });
-}
 </script>
 </body>
 </html>
