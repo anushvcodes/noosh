@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>NOOSH — talk, and it types</title>
 <meta name="description" content="NOOSH Web — hold to talk and your words appear as text, right in your browser." />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0c10'/%3E%3Ctext x='32' y='45' font-family='Helvetica,Arial' font-size='40' font-weight='800' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0c10'/%3E%3Ccircle cx='32' cy='30' r='15' fill='%23ffe0cf'/%3E%3Ccircle cx='26' cy='30' r='3.4' fill='%23101728'/%3E%3Ccircle cx='38' cy='30' r='3.4' fill='%23101728'/%3E%3Cpath d='M24 42h16' stroke='%237deec7' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" />
 <style>
   :root{
     --bg1:#0b0c10; --bg2:#020204; --card:rgba(255,255,255,.045);
@@ -24,13 +24,17 @@
   .wrap{width:100%; max-width:720px}
   header{display:flex; align-items:center; gap:14px; margin-bottom:22px}
   .logo{
-    width:54px; height:54px; border-radius:15px; flex:none;
-    background:linear-gradient(160deg,#1a1d25,#070709);
-    border:1px solid var(--line);
-    display:grid; place-items:center;
-    font-weight:800; font-size:28px; letter-spacing:-1px;
-    box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+    width:62px; height:62px; border-radius:17px; flex:none; overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.45);
   }
+  .logo svg{width:100%; height:100%; display:block}
+  #eyeL,#eyeR{transform-box:fill-box; transform-origin:center}
+  #eyeL.blink,#eyeR.blink{animation:blink .15s ease-in-out}
+  @keyframes blink{0%,100%{transform:scaleY(1)}45%{transform:scaleY(.06)}}
+  #waves path{animation:wavepulse 1.7s ease-in-out infinite}
+  #waves path:nth-child(2){animation-delay:.28s}
+  @keyframes wavepulse{0%,100%{opacity:.3}50%{opacity:1}}
+  body.listening #waves path{animation-duration:.7s}
   h1{margin:0; font-size:26px; letter-spacing:-.4px}
   h1 small{display:block; font-weight:400; font-size:13.5px; color:var(--dim); letter-spacing:0; margin-top:3px}
   .card{
@@ -92,7 +96,60 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="logo">N</div>
+    <div class="logo" title="NOOSH">
+      <svg id="noosh" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NOOSH mascot">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d222c"/><stop offset="1" stop-color="#07080c"/></linearGradient>
+          <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#232a3a"/><stop offset="0.5" stop-color="#11151f"/><stop offset="1" stop-color="#080a10"/></linearGradient>
+          <linearGradient id="hair2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#333c52"/><stop offset="1" stop-color="#0d1018"/></linearGradient>
+          <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9db"/><stop offset="1" stop-color="#ffd0ba"/></linearGradient>
+          <linearGradient id="iris" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5470ad"/><stop offset="0.55" stop-color="#1e2740"/><stop offset="1" stop-color="#0a0e1b"/></linearGradient>
+          <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#7deec7" stop-opacity="0.28"/><stop offset="1" stop-color="#7deec7" stop-opacity="0"/></radialGradient>
+          <clipPath id="eyeLClip"><ellipse cx="206" cy="284" rx="41" ry="47"/></clipPath>
+          <clipPath id="eyeRClip"><ellipse cx="306" cy="284" rx="41" ry="47"/></clipPath>
+        </defs>
+        <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+        <circle cx="256" cy="256" r="212" fill="url(#glow)"/>
+        <path d="M256 72 C 138 72 76 168 76 290 C 76 402 90 472 106 504 H 406 C 422 472 436 402 436 290 C 436 168 374 72 256 72 Z" fill="url(#hair)"/>
+        <path d="M256 352 C 210 352 190 370 180 392 C 166 422 160 458 158 500 H 354 C 352 458 346 422 332 392 C 322 370 302 352 256 352 Z" fill="#141924"/>
+        <path d="M256 352 C 234 352 216 362 205 378 C 230 396 282 396 307 378 C 296 362 278 352 256 352 Z" fill="#7deec7" opacity="0.92"/>
+        <path d="M228 332 h56 v38 c 0 15 -56 15 -56 0 Z" fill="#ffd0ba"/>
+        <ellipse cx="152" cy="288" rx="16" ry="26" fill="#ffd0ba"/>
+        <ellipse cx="360" cy="288" rx="16" ry="26" fill="#ffd0ba"/>
+        <ellipse cx="256" cy="274" rx="107" ry="115" fill="url(#skin)"/>
+        <ellipse cx="186" cy="320" rx="24" ry="13" fill="#ff8fa3" opacity="0.32"/>
+        <ellipse cx="326" cy="320" rx="24" ry="13" fill="#ff8fa3" opacity="0.32"/>
+        <g id="head">
+          <path d="M172 232 q 33 -19 64 -3" stroke="#141824" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <path d="M340 232 q -33 -19 -64 -3" stroke="#141824" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <g id="eyeL">
+            <ellipse cx="206" cy="284" rx="41" ry="47" fill="#ffffff"/>
+            <g clip-path="url(#eyeLClip)"><g class="gazeL">
+              <circle cx="206" cy="288" r="29" fill="url(#iris)"/><circle cx="206" cy="292" r="14" fill="#05070d"/>
+              <circle cx="195" cy="270" r="11" fill="#ffffff" opacity="0.97"/><circle cx="217" cy="305" r="5.5" fill="#ffffff" opacity="0.72"/>
+            </g></g>
+            <path d="M166 268 q 40 -33 80 -2" stroke="#0c0f18" stroke-width="10" fill="none" stroke-linecap="round"/>
+          </g>
+          <g id="eyeR">
+            <ellipse cx="306" cy="284" rx="41" ry="47" fill="#ffffff"/>
+            <g clip-path="url(#eyeRClip)"><g class="gazeR">
+              <circle cx="306" cy="288" r="29" fill="url(#iris)"/><circle cx="306" cy="292" r="14" fill="#05070d"/>
+              <circle cx="295" cy="270" r="11" fill="#ffffff" opacity="0.97"/><circle cx="317" cy="305" r="5.5" fill="#ffffff" opacity="0.72"/>
+            </g></g>
+            <path d="M346 268 q -40 -33 -80 -2" stroke="#0c0f18" stroke-width="10" fill="none" stroke-linecap="round"/>
+          </g>
+          <path d="M258 310 q 8 9 -5 13" stroke="#e6a98f" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path id="mouth" d="M234 350 q 22 20 44 0" stroke="#c9616b" stroke-width="7" fill="none" stroke-linecap="round"/>
+        </g>
+        <path d="M150 292 C 134 166 190 100 256 100 C 322 100 378 166 362 292 C 352 212 328 174 292 166 C 312 194 312 228 300 256 C 286 206 238 192 208 214 C 190 228 184 256 188 288 C 172 242 162 254 150 292 Z" fill="url(#hair2)"/>
+        <path d="M152 250 C 126 314 124 392 140 458 C 152 406 156 330 174 278 Z" fill="url(#hair)"/>
+        <path d="M360 250 C 386 314 388 392 372 458 C 360 406 356 330 338 278 Z" fill="url(#hair)"/>
+        <g id="waves" stroke="#7deec7" fill="none" stroke-linecap="round" opacity="0.95">
+          <path d="M400 292 q 18 28 0 56" stroke-width="8"/>
+          <path d="M428 272 q 30 48 0 96" stroke-width="8" opacity="0.75"/>
+        </g>
+      </svg>
+    </div>
     <h1>NOOSH <small>Hold to talk — your words appear as text.</small></h1>
   </header>
 
@@ -202,6 +259,9 @@
   function setListening(on){
     listening = on;
     mic.classList.toggle('on', on);
+    document.body.classList.toggle('listening', on);
+    var m = document.getElementById('mouth');
+    if(m) m.setAttribute('d', on ? 'M236 348 q 20 26 40 0 q -20 8 -40 0 Z' : 'M234 350 q 22 20 44 0');
     statusEl.firstChild.textContent = on ? 'Listening…' : 'Ready';
     subEl.textContent = on ? 'Release to stop.' : 'Hold the mic, or hold the Space bar, and speak.';
   }
@@ -255,6 +315,45 @@
 
   // Browser hint
   hint.textContent = /Firefox/i.test(navigator.userAgent) ? 'Firefox not supported' : '';
+})();
+
+// Mascot: her eyes follow the cursor (same character as the app icon).
+(function(){
+  var svg   = document.getElementById('noosh');
+  var head  = document.getElementById('head');
+  var gazeL = document.querySelector('.gazeL');
+  var gazeR = document.querySelector('.gazeR');
+  var eyes  = [document.getElementById('eyeL'), document.getElementById('eyeR')];
+  if(!svg || !head) return;
+  var MAX = 11, target = {x:0,y:0,rot:0}, cur = {x:0,y:0,rot:0}, lastMove = 0;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function aim(cx0, cy0){
+    var r = svg.getBoundingClientRect();
+    var dx = cx0 - (r.left + r.width*0.5);
+    var dy = cy0 - (r.top + r.height*0.56);
+    var len = Math.hypot(dx, dy) || 1;
+    var mag = Math.min(1, len / 260);
+    target.x = (dx/len)*MAX*mag; target.y = (dy/len)*MAX*mag; target.rot = (dx/len)*4.5*mag;
+  }
+  window.addEventListener('mousemove', function(e){ lastMove = performance.now(); aim(e.clientX, e.clientY); }, {passive:true});
+  window.addEventListener('touchmove', function(e){ lastMove = performance.now(); if(e.touches[0]) aim(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+  function tick(now){
+    if(now - lastMove > 2600){
+      target.x = Math.sin(now/1500)*6.5; target.y = Math.cos(now/2100)*3.5; target.rot = target.x*0.32;
+    }
+    cur.x += (target.x-cur.x)*0.13; cur.y += (target.y-cur.y)*0.13; cur.rot += (target.rot-cur.rot)*0.09;
+    var t = 'translate(' + cur.x.toFixed(2) + ' ' + cur.y.toFixed(2) + ')';
+    gazeL.setAttribute('transform', t); gazeR.setAttribute('transform', t);
+    head.setAttribute('transform', 'rotate(' + cur.rot.toFixed(2) + ' 256 350)');
+    requestAnimationFrame(tick);
+  }
+  if(!reduce) requestAnimationFrame(tick);
+  function blink(){
+    eyes.forEach(function(el){ el.classList.add('blink'); });
+    setTimeout(function(){ eyes.forEach(function(el){ el.classList.remove('blink'); }); }, 160);
+    setTimeout(blink, 2000 + Math.random()*3400);
+  }
+  if(!reduce) setTimeout(blink, 1400);
 })();
 </script>
 </body>
