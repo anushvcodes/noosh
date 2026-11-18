@@ -7,7 +7,7 @@
 <meta name="description" content="NOOSH turns your voice into text anywhere on your Mac. Download it, or try it right in your browser." />
 <meta property="og:title" content="NOOSH — hold Option, talk, it types" />
 <meta property="og:description" content="Voice to text anywhere on your Mac. Or try it in your browser — no install." />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0c10'/%3E%3Ctext x='32' y='45' font-family='Helvetica,Arial' font-size='40' font-weight='800' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0c10'/%3E%3Ccircle cx='32' cy='30' r='15' fill='%23ffe0cf'/%3E%3Ccircle cx='26' cy='30' r='3.4' fill='%23101728'/%3E%3Ccircle cx='38' cy='30' r='3.4' fill='%23101728'/%3E%3Cpath d='M24 42h16' stroke='%237deec7' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" />
 <style>
   :root{
     --bg1:#0b0c10; --bg2:#020204; --card:rgba(255,255,255,.05);
@@ -20,19 +20,33 @@
     font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
     background:radial-gradient(1100px 650px at 50% -8%,#15181f 0%,var(--bg1) 46%,var(--bg2) 100%);
     -webkit-font-smoothing:antialiased;
-    display:flex; align-items:center; justify-content:center; padding:36px 20px;
+    display:flex; align-items:center; justify-content:center; padding:34px 20px;
+    overflow-x:hidden;
   }
   .wrap{width:100%; max-width:680px}
-  .hero{text-align:center; margin-bottom:26px}
-  .logo{
-    width:84px; height:84px; margin:0 auto 18px; border-radius:22px;
-    background:linear-gradient(160deg,#1b1f27,#070709);
-    border:1px solid var(--line); display:grid; place-items:center;
-    font-weight:800; font-size:44px; letter-spacing:-2px;
-    box-shadow:0 18px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
+  .hero{text-align:center; margin-bottom:22px}
+
+  /* animated mascot */
+  .stage{
+    width:176px; height:176px; margin:0 auto 14px; position:relative;
+    filter:drop-shadow(0 22px 44px rgba(0,0,0,.55));
   }
+  .stage::after{
+    content:""; position:absolute; inset:-26px; border-radius:50%;
+    background:radial-gradient(closest-side,rgba(125,238,199,.18),transparent 72%);
+    z-index:-1; pointer-events:none;
+  }
+  #noosh{width:100%; height:100%; display:block; overflow:visible}
+  #eyeL,#eyeR{transform-box:fill-box; transform-origin:center}
+  #eyeL.blink,#eyeR.blink{animation:blink .15s ease-in-out}
+  @keyframes blink{0%,100%{transform:scaleY(1)}45%{transform:scaleY(.06)}}
+  #waves path{animation:pulse 1.7s ease-in-out infinite}
+  #waves path:nth-child(2){animation-delay:.28s}
+  @keyframes pulse{0%,100%{opacity:.30}50%{opacity:1}}
+
   h1{margin:0 0 8px; font-size:34px; letter-spacing:-.8px}
   .tag{color:var(--dim); font-size:16.5px; margin:0}
+  .hint{color:var(--mint); font-size:13px; margin:8px 0 0; opacity:.85}
   .card{
     background:var(--card); border:1px solid var(--line); border-radius:22px;
     padding:24px; box-shadow:0 26px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
@@ -66,9 +80,101 @@
 <body>
 <div class="wrap">
   <div class="hero">
-    <div class="logo">N</div>
+    <div class="stage">
+      <svg id="noosh" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NOOSH mascot">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d222c"/><stop offset="1" stop-color="#07080c"/></linearGradient>
+          <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#232a3a"/><stop offset="0.5" stop-color="#11151f"/><stop offset="1" stop-color="#080a10"/></linearGradient>
+          <linearGradient id="hair2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#333c52"/><stop offset="1" stop-color="#0d1018"/></linearGradient>
+          <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9db"/><stop offset="1" stop-color="#ffd0ba"/></linearGradient>
+          <linearGradient id="iris" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5470ad"/><stop offset="0.55" stop-color="#1e2740"/><stop offset="1" stop-color="#0a0e1b"/></linearGradient>
+          <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#7deec7" stop-opacity="0.28"/><stop offset="1" stop-color="#7deec7" stop-opacity="0"/></radialGradient>
+          <clipPath id="eyeLClip"><ellipse cx="206" cy="284" rx="41" ry="47"/></clipPath>
+          <clipPath id="eyeRClip"><ellipse cx="306" cy="284" rx="41" ry="47"/></clipPath>
+        </defs>
+
+        <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+        <rect x="1.5" y="1.5" width="509" height="509" rx="110.5" fill="none" stroke="#ffffff" stroke-opacity="0.09" stroke-width="3"/>
+        <circle cx="256" cy="256" r="212" fill="url(#glow)"/>
+
+        <path d="M256 72 C 138 72 76 168 76 290 C 76 402 90 472 106 504 H 406 C 422 472 436 402 436 290 C 436 168 374 72 256 72 Z" fill="url(#hair)"/>
+        <path d="M150 300 C 140 396 148 470 166 504 H 208 C 188 448 178 372 182 292 Z" fill="#000000" opacity="0.28"/>
+        <path d="M362 300 C 372 396 364 470 346 504 H 304 C 324 448 334 372 330 292 Z" fill="#000000" opacity="0.28"/>
+
+        <path d="M256 352 C 210 352 190 370 180 392 C 166 422 160 458 158 500 H 354 C 352 458 346 422 332 392 C 322 370 302 352 256 352 Z" fill="#141924"/>
+        <path d="M256 352 C 234 352 216 362 205 378 C 230 396 282 396 307 378 C 296 362 278 352 256 352 Z" fill="#7deec7" opacity="0.92"/>
+
+        <path d="M228 332 h56 v38 c 0 15 -56 15 -56 0 Z" fill="#ffd0ba"/>
+        <path d="M228 336 c 16 14 40 14 56 0 v10 c -16 14 -40 14 -56 0 Z" fill="#f0b79f" opacity="0.7"/>
+
+        <ellipse cx="152" cy="288" rx="16" ry="26" fill="#ffd0ba"/>
+        <ellipse cx="360" cy="288" rx="16" ry="26" fill="#ffd0ba"/>
+
+        <ellipse cx="256" cy="274" rx="107" ry="115" fill="url(#skin)"/>
+
+        <ellipse cx="186" cy="320" rx="24" ry="13" fill="#ff8fa3" opacity="0.32"/>
+        <ellipse cx="326" cy="320" rx="24" ry="13" fill="#ff8fa3" opacity="0.32"/>
+
+        <g id="head">
+          <path d="M172 232 q 33 -19 64 -3" stroke="#141824" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <path d="M340 232 q -33 -19 -64 -3" stroke="#141824" stroke-width="9" fill="none" stroke-linecap="round"/>
+
+          <g id="eyeL">
+            <ellipse cx="206" cy="284" rx="41" ry="47" fill="#ffffff"/>
+            <ellipse cx="206" cy="284" rx="41" ry="47" fill="#dfe6f2" opacity="0.55"/>
+            <g clip-path="url(#eyeLClip)">
+              <g class="gazeL">
+                <circle cx="206" cy="288" r="29" fill="url(#iris)"/>
+                <circle cx="206" cy="292" r="14" fill="#05070d"/>
+                <circle cx="195" cy="270" r="11" fill="#ffffff" opacity="0.97"/>
+                <circle cx="217" cy="305" r="5.5" fill="#ffffff" opacity="0.72"/>
+              </g>
+            </g>
+            <path d="M166 268 q 40 -33 80 -2" stroke="#0c0f18" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M170 300 q 36 30 74 4" stroke="#0c0f18" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.35"/>
+          </g>
+          <g id="eyeR">
+            <ellipse cx="306" cy="284" rx="41" ry="47" fill="#ffffff"/>
+            <ellipse cx="306" cy="284" rx="41" ry="47" fill="#dfe6f2" opacity="0.55"/>
+            <g clip-path="url(#eyeRClip)">
+              <g class="gazeR">
+                <circle cx="306" cy="288" r="29" fill="url(#iris)"/>
+                <circle cx="306" cy="292" r="14" fill="#05070d"/>
+                <circle cx="295" cy="270" r="11" fill="#ffffff" opacity="0.97"/>
+                <circle cx="317" cy="305" r="5.5" fill="#ffffff" opacity="0.72"/>
+              </g>
+            </g>
+            <path d="M346 268 q -40 -33 -80 -2" stroke="#0c0f18" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M342 300 q -36 30 -74 4" stroke="#0c0f18" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.35"/>
+          </g>
+
+          <path d="M258 310 q 8 9 -5 13" stroke="#e6a98f" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path id="mouth" d="M234 350 q 22 20 44 0" stroke="#c9616b" stroke-width="7" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <path d="M150 292 C 134 166 190 100 256 100 C 322 100 378 166 362 292 C 352 212 328 174 292 166 C 312 194 312 228 300 256 C 286 206 238 192 208 214 C 190 228 184 256 188 288 C 172 242 162 254 150 292 Z" fill="url(#hair2)"/>
+        <path d="M152 250 C 126 314 124 392 140 458 C 152 406 156 330 174 278 Z" fill="url(#hair)"/>
+        <path d="M360 250 C 386 314 388 392 372 458 C 360 406 356 330 338 278 Z" fill="url(#hair)"/>
+        <path d="M300 150 C 330 168 346 200 344 236 C 330 206 314 184 292 172 Z" fill="#ffffff" opacity="0.10"/>
+
+        <g id="waves" stroke="#7deec7" fill="none" stroke-linecap="round" opacity="0.95">
+          <path d="M400 292 q 18 28 0 56" stroke-width="8"/>
+          <path d="M428 272 q 30 48 0 96" stroke-width="8" opacity="0.75"/>
+        </g>
+
+        <g id="micbadge" transform="translate(398,412)">
+          <circle r="50" fill="#7deec7"/>
+          <circle r="50" fill="none" stroke="#04231a" stroke-opacity="0.14" stroke-width="3"/>
+          <rect x="-10" y="-30" width="20" height="34" rx="10" fill="#06251c"/>
+          <path d="M-22 -4 a22 22 0 0 0 44 0" fill="none" stroke="#06251c" stroke-width="7" stroke-linecap="round"/>
+          <line x1="0" y1="20" x2="0" y2="30" stroke="#06251c" stroke-width="7" stroke-linecap="round"/>
+          <line x1="-14" y1="32" x2="14" y2="32" stroke="#06251c" stroke-width="7" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
     <h1>NOOSH</h1>
     <p class="tag">Hold <kbd>⌥ Option</kbd> anywhere and talk — your words appear as text.</p>
+    <p class="hint" id="hint">She follows your cursor — move your mouse 👀</p>
   </div>
 
   <div class="card">
@@ -97,5 +203,72 @@
 
   <p class="foot">Everything is transcribed on your device — nothing is uploaded.<br>Made with ❤️ for quick hands-free typing.</p>
 </div>
+
+<script>
+(function(){
+  var svg   = document.getElementById('noosh');
+  var head  = document.getElementById('head');
+  var gazeL = document.querySelector('.gazeL');
+  var gazeR = document.querySelector('.gazeR');
+  var eyes  = [document.getElementById('eyeL'), document.getElementById('eyeR')];
+  var hint  = document.getElementById('hint');
+
+  var MAX = 11;      // how far the pupils can move (SVG units)
+  var target = {x:0, y:0, rot:0};
+  var cur    = {x:0, y:0, rot:0};
+  var lastMove = 0;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function aim(clientX, clientY){
+    var r  = svg.getBoundingClientRect();
+    var cx = r.left + r.width  * 0.5;
+    var cy = r.top  + r.height * 0.56;
+    var dx = clientX - cx;
+    var dy = clientY - cy;
+    var len = Math.hypot(dx, dy) || 1;
+    var mag = Math.min(1, len / 260);
+    target.x = (dx/len) * MAX * mag;
+    target.y = (dy/len) * MAX * mag;
+    target.rot = (dx/len) * 4.5 * mag;
+  }
+
+  window.addEventListener('mousemove', function(e){
+    lastMove = performance.now();
+    if (hint && hint.style.opacity !== '0') { hint.style.opacity = '0'; }
+    aim(e.clientX, e.clientY);
+  }, {passive:true});
+
+  window.addEventListener('touchmove', function(e){
+    lastMove = performance.now();
+    var t = e.touches[0];
+    if (t) aim(t.clientX, t.clientY);
+  }, {passive:true});
+
+  function tick(now){
+    if (now - lastMove > 2600){
+      // idle: glance around gently
+      target.x   = Math.sin(now / 1500) * 6.5;
+      target.y   = Math.cos(now / 2100) * 3.5;
+      target.rot = target.x * 0.32;
+    }
+    cur.x   += (target.x   - cur.x)   * 0.13;
+    cur.y   += (target.y   - cur.y)   * 0.13;
+    cur.rot += (target.rot - cur.rot) * 0.09;
+    var t = 'translate(' + cur.x.toFixed(2) + ' ' + cur.y.toFixed(2) + ')';
+    gazeL.setAttribute('transform', t);
+    gazeR.setAttribute('transform', t);
+    head.setAttribute('transform', 'rotate(' + cur.rot.toFixed(2) + ' 256 350)');
+    requestAnimationFrame(tick);
+  }
+  if (!reduce) requestAnimationFrame(tick);
+
+  function blink(){
+    eyes.forEach(function(el){ el.classList.add('blink'); });
+    setTimeout(function(){ eyes.forEach(function(el){ el.classList.remove('blink'); }); }, 160);
+    setTimeout(blink, 2000 + Math.random() * 3400);
+  }
+  if (!reduce) setTimeout(blink, 1400);
+})();
+</script>
 </body>
 </html>
