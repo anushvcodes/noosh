@@ -101,9 +101,9 @@
         <rect width="512" height="512" rx="112" fill="url(#bg)"/>
         <circle cx="256" cy="256" r="150" fill="#ffffff"/>
         <g id="head">
-          <g id="eyeL"><g class="gazeL"><ellipse cx="206" cy="220" rx="23" ry="31" fill="#0b0d12"/></g></g>
-          <g id="eyeR"><g class="gazeR"><ellipse cx="306" cy="220" rx="23" ry="31" fill="#0b0d12"/></g></g>
-          <path id="mouth" d="M172 286 Q 256 392 340 286 Q 256 330 172 286 Z" fill="#0b0d12"/>
+          <g id="eyeL"><g class="gazeL"><ellipse cx="204" cy="230" rx="25" ry="27" fill="#0b0d12"/></g></g>
+          <g id="eyeR"><g class="gazeR"><ellipse cx="308" cy="230" rx="25" ry="27" fill="#0b0d12"/></g></g>
+          <path id="mouth" d="M190 292 Q 256 348 322 292" fill="none" stroke="#0b0d12" stroke-width="19" stroke-linecap="round"/>
         </g>
       </svg>
     </div>
@@ -219,9 +219,16 @@
     mic.classList.toggle('on', on);
     document.body.classList.toggle('listening', on);
     var m = document.getElementById('mouth');
-    if(m) m.setAttribute('d', on
-      ? 'M206 292 Q 256 292 306 292 Q 306 376 256 376 Q 206 376 206 292 Z'
-      : 'M172 286 Q 256 392 340 286 Q 256 330 172 286 Z');
+    if(m){
+      if(on){
+        m.setAttribute('d','M208 296 Q 256 296 304 296 Q 304 368 256 368 Q 208 368 208 296 Z');
+        m.setAttribute('fill','#0b0d12'); m.setAttribute('stroke','none');
+      } else {
+        m.setAttribute('d','M190 292 Q 256 348 322 292');
+        m.setAttribute('fill','none'); m.setAttribute('stroke','#0b0d12');
+        m.setAttribute('stroke-width','19'); m.setAttribute('stroke-linecap','round');
+      }
+    }
     statusEl.firstChild.textContent = on ? 'Listening…' : 'Ready';
     subEl.textContent = on ? 'Release to stop.' : 'Hold the mic, or hold the Space bar, and speak.';
   }
