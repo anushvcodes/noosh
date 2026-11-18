@@ -60,6 +60,10 @@
   .status{font-size:15px; font-weight:600}
   .status .sub{display:block; font-weight:400; color:var(--dim); font-size:12.5px; margin-top:2px}
   .hint{color:var(--dim); font-size:12.5px; margin-left:auto}
+  .modes{display:inline-flex; background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:11px; padding:3px; gap:3px}
+  .modes .seg{background:transparent; border:none; color:var(--dim); font:inherit; font-size:12.5px; font-weight:600; padding:6px 12px; border-radius:8px; cursor:pointer}
+  .modes .seg.active{background:rgba(125,238,199,.16); color:var(--mint)}
+  .note{margin-top:12px; color:var(--dim); font-size:12.5px; line-height:1.65}
   kbd{
     background:rgba(255,255,255,.09); border:1px solid var(--line); border-bottom-width:2px;
     border-radius:6px; padding:1px 6px; font-size:11.5px; font-family:inherit;
@@ -122,6 +126,10 @@
       <div class="status" id="status">Ready
         <span class="sub" id="sub">Hold the mic, or hold the <kbd>Space</kbd> bar, and speak.</span>
       </div>
+      <div class="modes" id="modes" role="group" aria-label="Activation mode">
+        <button type="button" class="seg active" data-mode="hold">Hold</button>
+        <button type="button" class="seg" data-mode="tap">Tap</button>
+      </div>
       <div class="hint" id="hint"></div>
     </div>
 
@@ -146,6 +154,12 @@
       </select>
     </div>
 
+    <p class="note" id="note">
+      NOOSH Web is <strong>optional</strong> — it grabs the mic only while you hold (or tap) the button, then releases it
+      straight away, so nothing else is blocked. If your device or the text field already has its own dictation
+      (macOS <kbd>⌃⌃</kbd>, Windows <kbd>⊞</kbd>+<kbd>H</kbd>, or the mic inside the field), just use that — the two happily coexist.
+    </p>
+
     <div class="foot">
       Works best in <strong>Chrome</strong>, <strong>Edge</strong> or <strong>Safari</strong>. Speech is processed by your browser.
       <br>Want the real thing — hold <kbd>⌥ Option</kbd> and dictate into <em>any</em> app? That's the macOS app.
@@ -168,7 +182,8 @@
   const langSel = document.getElementById('lang');
   const hint = document.getElementById('hint');
 
-  let rec = null, listening = false, holdMode = true, finalText = '';
+  const modesEl = document.getElementById('modes');
+  let rec = null, stream = null, listening = false, finalText = '', mode = 'hold', wantOn = false;
 
   if(!SR){
     mic.disabled = true;
@@ -178,24 +193,46 @@
     return;
   }
 
+  // Release the microphone hardware right now — stop every live audio track so
+  // the OS hands the mic straight back to other apps (Gemini, Siri, Voice Memos…).
+  function releaseMic(){
+    if(!stream) return;
+    try{ stream.getTracks().forEach(t => { try{ t.stop(); }catch(_){} }); }catch(_){}
+    stream = null;
+  }
+
+  // Drop the recognizer and free the mic. Called on every stop, so NOOSH never
+  // keeps a background audio stream open between turns.
+  function teardown(){
+    if(rec){
+      try{
+        rec.onstart = rec.onend = rec.onerror = rec.onresult = null;
+        rec.abort();
+      }catch(_){}
+      rec = null;
+    }
+    releaseMic();
+  }
+
   function build(){
     rec = new SR();
     rec.continuous = true;
     rec.interimResults = true;
     rec.lang = langSel.value;
     rec.onstart = () => setListening(true);
-    rec.onend = () => {
-      if(listening && holdMode){ /* stopped by release */ }
-      setListening(false);
-    };
+    rec.onend = () => { setListening(false); teardown(); };
     rec.onerror = (e) => {
       if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
         warn.style.display = 'block';
         warn.textContent = 'Microphone permission was blocked. Allow microphone access for this site, then try again.';
+      } else if(e.error === 'audio-capture'){
+        warn.style.display = 'block';
+        warn.textContent = 'The microphone is busy — another app may be using it. Close it and try again.';
       } else if(e.error === 'no-speech'){
         // ignore, we just restart
       }
       setListening(false);
+      teardown();
     };
     rec.onresult = (e) => {
       let interim = '';
@@ -230,40 +267,96 @@
       }
     }
     statusEl.firstChild.textContent = on ? 'Listening…' : 'Ready';
-    subEl.textContent = on ? 'Release to stop.' : 'Hold the mic, or hold the Space bar, and speak.';
+    subEl.textContent = on
+      ? (mode === 'tap' ? 'Tap again to stop.' : 'Release to stop.')
+      : (mode === 'tap' ? 'Tap the mic (or press Space) to start.' : 'Hold the mic, or hold the Space bar, and speak.');
   }
 
-  function start(){
+  async function start(){
     if(listening) return;
+    wantOn = true;
     finalText = out.textContent === out.getAttribute('data-ph') ? '' : out.textContent;
     warn.style.display='none';
-    try{ rec.start(); setListening(true); }catch(_){}
+    teardown();                 // make sure no earlier mic session lingers
+    build();                    // a fresh recognizer for this turn only
+
+    // Ask for the microphone only now — while the user is actively holding/pressing.
+    let track = null;
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        track = (stream.getAudioTracks() || [])[0] || null;
+      }catch(err){
+        warn.style.display = 'block';
+        warn.textContent = (err && err.name === 'NotAllowedError')
+          ? 'Microphone permission was blocked. Allow microphone access for this site, then try again.'
+          : 'Could not reach the microphone — another app may be using it. Close it and try again.';
+        teardown();
+        return;
+      }
+    }
+
+    // The button may have been released while we waited for permission — if so,
+    // give the mic straight back instead of holding it.
+    if(!wantOn){ teardown(); return; }
+
+    try{
+      if(track){ try{ rec.start(track); }catch(_){ rec.start(); } }  // recognise our own track
+      else { rec.start(); }                                          // fall back to the default mic
+      setListening(true);
+    }catch(_){ teardown(); }
   }
+
   function stop(){
-    if(!rec) return;
-    try{ rec.stop(); }catch(_){}
+    wantOn = false;
     setListening(false);
+    if(rec){ try{ rec.stop(); }catch(_){} }   // finalise recognition
+    releaseMic();                              // and free the hardware immediately
+    // safety net in case onend is slow — drop the recognizer anyway
+    setTimeout(function(){ if(!listening) teardown(); }, 800);
   }
 
-  build();
-  langSel.addEventListener('change', () => { const was = listening; stop(); build(); if(was) setTimeout(start, 200); });
+  // Activation mode: Hold (push-to-talk) or Tap (toggle).
+  modesEl.addEventListener('click', (e)=>{
+    const b = e.target.closest('.seg');
+    if(!b) return;
+    mode = b.dataset.mode;
+    modesEl.querySelectorAll('.seg').forEach(s => s.classList.toggle('active', s === b));
+    if(listening) stop(); else setListening(false);
+  });
 
-  // Hold the mic button
-  mic.addEventListener('pointerdown', (e)=>{ e.preventDefault(); holdMode = true; start(); });
+  langSel.addEventListener('change', () => { const was = listening; stop(); if(was) setTimeout(start, 250); });
+
+  // Mic button
+  mic.addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    if(mode === 'tap'){ listening ? stop() : start(); }
+    else { start(); }
+  });
   ['pointerup','pointerleave','pointercancel'].forEach(ev =>
-    mic.addEventListener(ev, ()=>{ if(holdMode) stop(); })
+    mic.addEventListener(ev, ()=>{ if(mode === 'hold') stop(); })
   );
 
-  // Hold the space bar (when not typing in the output)
+  // Space bar (when not typing in the output)
   let spaceHeld = false;
   window.addEventListener('keydown', (e)=>{
     if(e.code === 'Space' && !e.repeat && document.activeElement !== out){
-      e.preventDefault(); if(!spaceHeld){ spaceHeld = true; holdMode = true; start(); }
+      e.preventDefault();
+      if(mode === 'tap'){ listening ? stop() : start(); }
+      else if(!spaceHeld){ spaceHeld = true; start(); }
     }
   });
   window.addEventListener('keyup', (e)=>{
-    if(e.code === 'Space'){ e.preventDefault(); spaceHeld = false; stop(); }
+    if(e.code === 'Space'){
+      e.preventDefault(); spaceHeld = false;
+      if(mode === 'hold') stop();
+    }
   });
+
+  // If the tab is hidden or closed mid-dictation, never keep holding the mic.
+  ['pagehide','beforeunload'].forEach(ev =>
+    window.addEventListener(ev, ()=>{ wantOn = false; try{ if(rec) rec.abort(); }catch(_){} releaseMic(); })
+  );
 
   copyBtn.addEventListener('click', async ()=>{
     const t = out.textContent.trim();
