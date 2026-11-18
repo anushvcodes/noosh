@@ -6,15 +6,7 @@
 <title>NOOSH — talk, and it types</title>
 <meta name="description" content="NOOSH Web — hold to talk and your words appear as text, right in your browser." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23f8fafc'/%3E%3Ccircle cx='23' cy='26' r='5' fill='%230b0d12'/%3E%3Ccircle cx='41' cy='26' r='5' fill='%230b0d12'/%3E%3Cpath d='M20 40q12 12 24 0' stroke='%230b0d12' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
-<!-- PWA -->
-<link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#0b0c10" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Vox" />
-<link rel="apple-touch-startup-image" href="icon-512.png" />
 <style>
   :root{
     --bg1:#0b0c10; --bg2:#020204; --card:rgba(255,255,255,.045);
@@ -424,15 +416,6 @@
   }
   if(!reduce) setTimeout(blink, 1400);
 })();
-</script>
-
-<script>
-// Register the service worker so the app is installable + works offline.
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  });
-}
 </script>
 </body>
 </html>
