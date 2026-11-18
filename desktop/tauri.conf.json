@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Vox Command",
+  "version": "1.0.0",
+  "identifier": "com.vox.command",
+  "build": {
+    "frontendDist": ".."
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Vox Command",
+        "width": 460,
+        "height": 760,
+        "minWidth": 380,
+        "minHeight": 620,
+        "resizable": true,
+        "decorations": false,
+        "transparent": false,
+        "backgroundColor": "#0b0c10",
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "../icon-512.png"
+    ]
+  }
+}
