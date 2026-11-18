@@ -143,6 +143,35 @@
   }
   .modal-close:hover{background:rgba(255,255,255,.12)}
   body.modal-open{overflow:hidden}
+
+  /* floating rewrite-style box (appears after speaking) */
+  .stylebox{
+    position:fixed; right:20px; top:50%; transform:translateY(-50%); z-index:50;
+    display:flex; flex-direction:column; gap:10px; align-items:stretch;
+    background:rgba(13,15,20,.92); border:1px solid var(--line); border-radius:16px;
+    padding:12px; box-shadow:0 20px 50px rgba(0,0,0,.5); backdrop-filter:blur(10px);
+    animation:fadein .2s ease;
+  }
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  .stylebox[hidden]{display:none !important}
+  .stylebox-label{font-size:10.5px; letter-spacing:1.4px; text-transform:uppercase; color:var(--dim); padding-left:2px}
+  .chips{display:flex; flex-direction:column; gap:8px}
+  .chip{
+    background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--ink);
+    border-radius:11px; padding:9px 16px; font:inherit; font-size:13px; font-weight:600;
+    cursor:pointer; text-align:left; white-space:nowrap;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .chip:hover{background:rgba(255,255,255,.12)}
+  .chip.active{background:rgba(125,238,199,.16); border-color:rgba(125,238,199,.45); color:var(--mint)}
+  @media (max-width:1060px){
+    .stylebox{
+      right:12px; left:12px; top:auto; bottom:14px; transform:none;
+      flex-direction:row; align-items:center; justify-content:space-between;
+    }
+    .chips{flex-direction:row}
+    .chip{padding:9px 14px}
+  }
 </style>
 </head>
 <body>
@@ -220,6 +249,15 @@
   </div>
 </div>
 
+<!-- Floating rewrite-style box (appears after you finish speaking) -->
+<div class="stylebox" id="styleBox" hidden>
+  <span class="stylebox-label" title="Text is cleaned up on your device — nothing is sent anywhere">✨ Rewrite</span>
+  <div class="chips" role="group" aria-label="Rewrite style">
+    <button type="button" class="chip" data-style="professional">Professional</button>
+    <button type="button" class="chip active" data-style="basic">Basic</button>
+  </div>
+</div>
+
 <!-- Privacy & Legal modal -->
 <div class="modal" id="legalModal" hidden>
   <div class="modal-bg" data-close></div>
@@ -255,9 +293,10 @@
   const saveBtn = document.getElementById('save');
   const langSel = document.getElementById('lang');
   const hint = document.getElementById('hint');
+  const styleBox = document.getElementById('styleBox');
 
   const modesEl = document.getElementById('modes');
-  let rec = null, stream = null, listening = false, finalText = '', mode = 'hold', wantOn = false;
+  let rec = null, stream = null, listening = false, rawText = '', interimText = '', style = 'basic', mode = 'hold', wantOn = false;
 
   if(!SR){
     mic.disabled = true;
@@ -288,6 +327,93 @@
     releaseMic();
   }
 
+  // ---------- Smart clean-up: 100% on-device, rule-based (no network, no data leaves the page) ----------
+  // Polishes the raw transcript — strips filler words, collapses repeats, fixes common
+  // typos/sound-alikes, tidies spacing & capitalisation, then closes the sentence.
+  var WORD_FIXES = {
+    teh:'the', adn:'and', nad:'and', hte:'the', waht:'what', wich:'which',
+    recieve:'receive', seperate:'separate', definately:'definitely',
+    occured:'occurred', untill:'until', becuase:'because', beleive:'believe',
+    wierd:'weird', thier:'their', goign:'going', jsut:'just', alot:'a lot',
+    dont:"don't", cant:"can't", wont:"won't", im:"I'm", ive:"I've"
+  };
+  var CONTRACTIONS = {
+    "i'm":'I am', "i've":'I have', "i'll":'I will', "i'd":'I would',
+    "you're":'you are', "you've":'you have', "you'll":'you will', "you'd":'you would',
+    "we're":'we are', "we've":'we have', "we'll":'we will', "we'd":'we would',
+    "they're":'they are', "they've":'they have', "they'll":'they will', "they'd":'they would',
+    "it's":'it is', "that's":'that is', "there's":'there is', "here's":'here is',
+    "what's":'what is', "who's":'who is', "let's":'let us',
+    "don't":'do not', "doesn't":'does not', "didn't":'did not',
+    "can't":'cannot', "won't":'will not', "wouldn't":'would not', "shouldn't":'should not',
+    "couldn't":'could not', "isn't":'is not', "aren't":'are not', "wasn't":'was not',
+    "weren't":'were not', "haven't":'have not', "hasn't":'has not', "hadn't":'had not'
+  };
+  var CASUAL = [
+    [/\bgonna\b/gi,'going to'], [/\bwanna\b/gi,'want to'], [/\bgotta\b/gi,'have to'],
+    [/\bkinda\b/gi,'somewhat'], [/\bsorta\b/gi,'somewhat'],
+    [/\byeah\b/gi,'yes'], [/\byep\b/gi,'yes'], [/\bnope\b/gi,'no'],
+    [/\bok\b/gi,'okay']
+  ];
+  var PROPER = { noosh:'NOOSH', whatsapp:'WhatsApp', google:'Google', gemini:'Gemini', siri:'Siri' };
+
+  function mapWords(s, map){
+    return s.replace(/[A-Za-z][A-Za-z']*/g, function(w){
+      var k = w.toLowerCase();
+      return Object.prototype.hasOwnProperty.call(map, k) ? map[k] : w;
+    });
+  }
+  function stripFillers(s){
+    return s
+      .replace(/\b(?:um+|uh+|erm+|hmm+|mm+|huh)\b,?\s*/gi, ' ')
+      .replace(/,\s*(?:you know|i mean)\s*,/gi, ',');
+  }
+  function collapseRepeats(s){ return s.replace(/\b([A-Za-z']+)(\s+\1\b)+/gi, '$1'); }
+  function fixSoundAlikes(s){ return s.replace(/\b(could|should|would|must|might) of\b/gi, '$1 have'); }
+  function tidySpacing(s){
+    return s
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/\s+([,.!?;:])/g, '$1')
+      .replace(/([,.!?;:])(?=[A-Za-z])/g, '$1 ')
+      .replace(/^\s+|\s+$/g, '');
+  }
+  function recapitalize(s){
+    s = s.replace(/(^|[.!?]\s+|\n\s*)([a-z])/g, function(_, p, c){ return p + c.toUpperCase(); });
+    s = s.replace(/\bi\b/g, 'I');
+    return mapWords(s, PROPER);
+  }
+  function closeSentence(s){
+    s = s.trim();
+    if(s && !/[.!?…:;,"']$/.test(s)) s += '.';
+    return s;
+  }
+  function normalize(t){
+    if(!t) return '';
+    var s = t.replace(/\s+/g, ' ').trim();
+    s = stripFillers(s);
+    s = collapseRepeats(s);
+    s = fixSoundAlikes(s);
+    s = mapWords(s, WORD_FIXES);
+    s = tidySpacing(s);
+    s = recapitalize(s);
+    return closeSentence(s);
+  }
+  function professionalize(t){
+    var s = normalize(t);
+    s = mapWords(s, CONTRACTIONS);
+    CASUAL.forEach(function(p){ s = s.replace(p[0], p[1]); });
+    s = collapseRepeats(s);
+    s = tidySpacing(s);
+    s = recapitalize(s);
+    return closeSentence(s);
+  }
+  function applyStyle(t, which){ return which === 'professional' ? professionalize(t) : normalize(t); }
+  function refreshStyleBox(){
+    if(!styleBox) return;
+    var hasDraft = (rawText + interimText).trim().length > 0;
+    styleBox.hidden = !(!listening && hasDraft);
+  }
+
   function build(){
     rec = new SR();
     rec.continuous = true;
@@ -309,20 +435,21 @@
       teardown();
     };
     rec.onresult = (e) => {
-      let interim = '';
+      interimText = '';
       for(let i=e.resultIndex; i<e.results.length; i++){
         const t = e.results[i][0].transcript;
-        if(e.results[i].isFinal) finalText += t;
-        else interim += t;
+        if(e.results[i].isFinal) rawText += t;
+        else interimText += t;
       }
-      render(interim);
+      render();
     };
   }
 
-  function render(interim){
-    const text = (finalText + (interim ? interim : '')).replace(/^\s+/,'');
-    out.textContent = text;
+  function render(){
+    const draft = (rawText + interimText).replace(/^\s+/,'');
+    out.textContent = draft ? applyStyle(draft, style) : '';
     out.scrollTop = out.scrollHeight;
+    refreshStyleBox();
   }
 
   function setListening(on){
@@ -344,12 +471,14 @@
     subEl.textContent = on
       ? (mode === 'tap' ? 'Tap again to stop.' : 'Release to stop.')
       : (mode === 'tap' ? 'Tap the mic (or press Space) to start.' : 'Hold the mic, or hold the Space bar, and speak.');
+    refreshStyleBox();
   }
 
   async function start(){
     if(listening) return;
     wantOn = true;
-    finalText = out.textContent === out.getAttribute('data-ph') ? '' : out.textContent;
+    if(!rawText) rawText = out.textContent === out.getAttribute('data-ph') ? '' : out.textContent;
+    interimText = '';
     warn.style.display='none';
     teardown();                 // make sure no earlier mic session lingers
     build();                    // a fresh recognizer for this turn only
@@ -438,7 +567,18 @@
     try{ await navigator.clipboard.writeText(t); flash(copyBtn,'Copied ✓'); }
     catch(_){ flash(copyBtn,'Press ⌘C'); }
   });
-  clearBtn.addEventListener('click', ()=>{ finalText=''; out.textContent=''; });
+  clearBtn.addEventListener('click', ()=>{ rawText=''; interimText=''; out.textContent=''; refreshStyleBox(); });
+
+  // Style chips: instantly re-render the draft in the chosen style.
+  if(styleBox){
+    styleBox.addEventListener('click', (e)=>{
+      const b = e.target.closest('.chip');
+      if(!b) return;
+      style = b.dataset.style;
+      styleBox.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === b));
+      render();
+    });
+  }
   saveBtn.addEventListener('click', ()=>{
     const t = out.textContent.trim(); if(!t) return;
     const a = document.createElement('a');
