@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>NOOSH — hold Option, talk, it types</title>
+<meta name="description" content="NOOSH turns your voice into text anywhere on your Mac. Download it, or try it right in your browser." />
+<meta property="og:title" content="NOOSH — hold Option, talk, it types" />
+<meta property="og:description" content="Voice to text anywhere on your Mac. Or try it in your browser — no install." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0c10'/%3E%3Ctext x='32' y='45' font-family='Helvetica,Arial' font-size='40' font-weight='800' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg1:#0b0c10; --bg2:#020204; --card:rgba(255,255,255,.05);
+    --line:rgba(255,255,255,.11); --ink:#f3f5f9; --dim:#98a1b1;
+    --mint:#7deec7; --mint2:#4fd6a8;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1100px 650px at 50% -8%,#15181f 0%,var(--bg1) 46%,var(--bg2) 100%);
+    -webkit-font-smoothing:antialiased;
+    display:flex; align-items:center; justify-content:center; padding:36px 20px;
+  }
+  .wrap{width:100%; max-width:680px}
+  .hero{text-align:center; margin-bottom:26px}
+  .logo{
+    width:84px; height:84px; margin:0 auto 18px; border-radius:22px;
+    background:linear-gradient(160deg,#1b1f27,#070709);
+    border:1px solid var(--line); display:grid; place-items:center;
+    font-weight:800; font-size:44px; letter-spacing:-2px;
+    box-shadow:0 18px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  h1{margin:0 0 8px; font-size:34px; letter-spacing:-.8px}
+  .tag{color:var(--dim); font-size:16.5px; margin:0}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:22px;
+    padding:24px; box-shadow:0 26px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .cta{display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:6px}
+  a.btn{
+    display:inline-flex; align-items:center; gap:10px; text-decoration:none; cursor:pointer;
+    padding:15px 22px; border-radius:14px; font-weight:700; font-size:15.5px;
+    transition:transform .08s ease, box-shadow .15s ease, background .15s ease;
+  }
+  a.btn:active{transform:scale(.98)}
+  .primary{background:linear-gradient(180deg,var(--mint),var(--mint2)); color:#04231a; box-shadow:0 14px 34px rgba(79,214,168,.32)}
+  .secondary{background:rgba(255,255,255,.07); color:var(--ink); border:1px solid var(--line)}
+  .secondary:hover{background:rgba(255,255,255,.12)}
+  .note{color:var(--dim); font-size:13px; text-align:center; margin-top:10px}
+  .steps{margin:22px 0 0; padding:0; list-style:none; counter-reset:s}
+  .steps li{position:relative; padding:11px 0 11px 40px; border-top:1px solid var(--line); font-size:14.5px}
+  .steps li:first-child{border-top:0}
+  .steps li::before{
+    counter-increment:s; content:counter(s);
+    position:absolute; left:0; top:10px; width:26px; height:26px; border-radius:50%;
+    background:rgba(125,238,199,.14); color:var(--mint); border:1px solid rgba(125,238,199,.3);
+    display:grid; place-items:center; font-size:12.5px; font-weight:700;
+  }
+  kbd{background:rgba(255,255,255,.09); border:1px solid var(--line); border-bottom-width:2px; border-radius:6px; padding:1px 7px; font-size:12.5px; font-family:inherit; white-space:nowrap}
+  .warn{margin-top:18px; padding:12px 14px; border-radius:12px; font-size:13.5px; background:rgba(255,214,120,.10); border:1px solid rgba(255,214,120,.28); color:#ffe6b0}
+  .foot{text-align:center; color:var(--dim); font-size:12.5px; margin-top:20px; line-height:1.7}
+  strong{color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="logo">N</div>
+    <h1>NOOSH</h1>
+    <p class="tag">Hold <kbd>⌥ Option</kbd> anywhere and talk — your words appear as text.</p>
+  </div>
+
+  <div class="card">
+    <div class="cta">
+      <a class="btn primary" id="dl" href="https://github.com/anushvcodes/noosh/releases/latest/download/NOOSH.dmg">
+        ⬇ Download for Mac
+      </a>
+      <a class="btn secondary" id="web" href="app.html">
+        Try it in your browser →
+      </a>
+    </div>
+    <p class="note">Mac app is universal (Apple Silicon + Intel). The browser version needs no install and works on Windows too.</p>
+
+    <ul class="steps">
+      <li>Open the downloaded <strong>NOOSH.dmg</strong> and drag <strong>NOOSH</strong> into your <strong>Applications</strong> folder.</li>
+      <li>Open NOOSH. The first time, <strong>right-click it → Open → Open</strong> (macOS asks this because the app is shared directly, not through the App Store).</li>
+      <li>Allow <strong>Microphone</strong>, <strong>Speech Recognition</strong> and <strong>Accessibility</strong> when asked.</li>
+      <li>Look for the small <strong>N</strong> in your menu bar. Hold <kbd>⌥</kbd>, say something, and let go.</li>
+    </ul>
+
+    <div class="warn">
+      Only macOS can run the full app (it types into any app for you). On <strong>Windows</strong>, use the
+      <strong>“Try it in your browser”</strong> button — it does voice-to-text with a Copy button.
+    </div>
+  </div>
+
+  <p class="foot">Everything is transcribed on your device — nothing is uploaded.<br>Made with ❤️ for quick hands-free typing.</p>
+</div>
+</body>
+</html>
